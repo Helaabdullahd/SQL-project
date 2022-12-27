@@ -1,0 +1,59 @@
+Set 1 Q 1
+
+SELECT title AS movie, name AS category, COUNT(rental_id) AS rental_count
+FROM (SELECT f.title, c.name, r.rental_id 
+FROM film f
+JOIN film_category fc
+ON f.film_id = fc.film_id
+JOIN category c
+ON c.category_id = fc.category_id
+JOIN inventory i
+ON i.film_id = f.film_id
+JOIN rental r
+ON i.inventory_id = r.inventory_id
+WHERE c.name IN ('Animation', 'Children', 'Classics', 'Comedy', 'Family', 'Music')) V1
+GROUP BY 2,1
+ORDER BY 2
+
+---------------
+Set 1 Q 2
+SELECT f.title, f.rental_duration, c.name,
+NTILE(4) OVER (ORDER BY f.rental_duration) as standard_quartile
+FROM film f
+JOIN film_category fc
+ON f.film_id = fc.film_id
+JOIN category c
+ON c.category_id = fc.category_id
+WHERE c.name IN ('Animation', 'Children', 'Classics', 'Comedy', 'Family', 'Music')
+GROUP BY  2,3,1
+ORDER BY 2 DESC
+-----------------
+Set 2 Q 1
+
+SELECT COUNT(nums), store_id,rental_year, rental_month
+FROM
+(SELECT r.rental_id AS nums, s.store_id AS store_id,
+DATE_PART('year', rental_date) AS rental_year,
+DATE_PART('month', rental_date) AS rental_month
+FROM rental r
+JOIN staff f
+ON r.staff_id = f.staff_id
+JOIN store s
+ON s.store_id = f.store_id) s1
+GROUP BY 2,3,4
+ORDER BY 1 DESC
+-----------------
+Set 2 Q 2
+
+SELECT CONCAT(first_name,' ',last_name) AS full_name,
+ DATE_TRUNC('month',payment_date) AS payment_month,
+SUM(p.amount), COUNT(p.payment_id) AS payment_per_month  
+FROM customer c
+JOIN payment p
+ON p.customer_id = c.customer_id
+GROUP BY 2,1
+ORDER BY 1, 2 
+LIMIT 10
+
+
+
